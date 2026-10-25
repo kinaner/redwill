@@ -13,5 +13,15 @@ static void button(int x, int y, int w, int h, const char *l, int on) {
     rect(x, y, w, h, on ? T.pill : 0xE4E5F2); bevel(x, y, w, h, 1);
     str(x + (w - slen(l) * 8) / 2, y + (h - 16) / 2, l, on ? 0xFFFFFF : 0x000000);
 }
-static void xlogo(int x, int y, int s, u32 c1, u32 c2) { int t = s / 5 + 1; for (int i = 0; i < s - t; i++) { rect(x + i, y + i, t, t, c1); rect(x + s - t - i, y + i, t, t, c2); } }
+/* RedWill "W" logo: four diagonal strokes inside an s x s box (c1 = left half, c2 = right half) */
+static void xlogo(int x, int y, int s, u32 c1, u32 c2) {
+    int t = s / 5 + 1, w = s - t, q = w / 4, m = w * 35 / 100;
+    for (int i = 0; i <= w; i++) {
+        int dx0 = i * q / w, dy = i;                       /* stroke 1: down-right  (0,0)->(q,w) */
+        rect(x + dx0, y + dy, t, t, c1);
+        rect(x + q + i * q / w, y + w - i * (w - m) / w, t, t, c1);          /* stroke 2: up to the middle peak */
+        rect(x + 2 * q + i * q / w, y + m + i * (w - m) / w, t, t, c2);      /* stroke 3: down from the peak */
+        rect(x + 3 * q + i * q / w, y + w - i, t, t, c2);                    /* stroke 4: up to the top right */
+    }
+}
 

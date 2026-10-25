@@ -5,7 +5,8 @@ cd "$(dirname "$0")"
 mkdir -p build
 CF="-m32 -ffreestanding -fno-pic -fno-pie -fno-stack-protector -mgeneral-regs-only -O2 -fno-builtin -fno-asynchronous-unwind-tables -fcf-protection=none -fno-tree-loop-distribute-patterns -fno-delete-null-pointer-checks -Wall"
 gcc $CF -c boot/boot.S -o build/boot.o
-gcc $CF -c kernel/main.c -o build/kernel.o
+python3 tools/ico2c.py inter32/icons build/icons_data.h
+gcc $CF -Ibuild -c kernel/main.c -o build/kernel.o
 ld -m elf_i386 -T boot/link.ld -nostdlib --build-id=none -o build/kernel.elf build/boot.o build/kernel.o
 objcopy -O binary build/kernel.elf build/boot.bin
 gcc -m32 -c boot/mbr.S -o build/mbr.o

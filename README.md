@@ -7,3 +7,4 @@ Bootable i386 hobby OS. Build with `./build.sh [pad_mb]` -> `build/redwill.iso`.
 - `userland/` apps: terminal, calculator, snake, browser
 - `tools/`    `mkiso.py` ISO9660 writer
 - `inter32/icons/` icônes 32x32 `.ico` (style Windows NT), générées par `python3 tools/gen_icons.py`
+- Les icônes de `inter32/icons/*.ico` sont converties au build (`tools/ico2c.py`) et affichées par le kernel.
