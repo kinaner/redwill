@@ -268,10 +268,33 @@ def user():
     c.r(14, 16, 17, 18, C(0xF0C8A0))
     c.shadow(); return c.im
 
+def rxe():
+    c = Cv()
+    c.box(2, 4, 29, 27, GRAY); c.bevel(3, 5, 28, 26, GRAY)
+    c.r(4, 6, 27, 9, C(0x600000)); c.vg(4, 6, 27, 9, C(0xE04040), C(0x801010)); c.r(23, 7, 26, 8, C(0xFFFFFF))
+    c.r(4, 10, 27, 25, C(0xF2F3FA)); c.r(4, 10, 27, 10, C(0xB0B0C0))
+    c.box(7, 13, 14, 17, C(0xE8E8E8), C(0x404040)); c.r(8, 14, 13, 14, C(0xFFFFFF))
+    c.line([(16, 15), (25, 15)], C(0x808090)); c.line([(16, 18), (23, 18)], C(0x808090))
+    c.d.polygon([(9, 20), (14, 23), (9, 26)], fill=C(0xD02020), outline=K)
+    c.shadow(); return c.im
+
+def rpp():
+    c = Cv()
+    c.poly([(6, 2), (21, 2), (27, 8), (27, 29), (6, 29)], C(0xFFFFFF), K)
+    c.poly([(21, 2), (21, 8), (27, 8)], LIGHT, K)
+    # "{ }" code braces in red + text lines
+    R = C(0xC02020)
+    for p_ in ((11, 12), (10, 13), (10, 14), (9, 15), (10, 16), (10, 17), (11, 18)): c.p(*p_, R)
+    for p_ in ((21, 12), (22, 13), (22, 14), (23, 15), (22, 16), (22, 17), (21, 18)): c.p(*p_, R)
+    c.r(14, 14, 18, 14, C(0x4060C0)); c.r(14, 17, 17, 17, C(0x4060C0))
+    c.r(9, 22, 24, 22, C(0x808090)); c.r(9, 25, 20, 25, C(0x808090))
+    c.r(26, 9, 26, 28, LIGHT); c.r(7, 28, 26, 28, LIGHT)
+    c.shadow(); return c.im
+
 ICONS = [("folder", folder), ("folder_open", folder_open), ("document", document), ("notepad", notepad),
          ("calculator", calculator), ("terminal", terminal), ("paint", paint), ("snake", snake),
          ("settings", settings), ("browser", globe), ("about", about), ("computer", computer),
-         ("drive", drive), ("recycle_bin", recycle), ("redwill", logo), ("shutdown", power), ("user", user)]
+         ("drive", drive), ("recycle_bin", recycle), ("redwill", logo), ("shutdown", power), ("user", user), ("rxe", rxe), ("rpp", rpp)]
 
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'inter32', 'icons')

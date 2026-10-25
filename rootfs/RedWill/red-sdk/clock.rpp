@@ -1,0 +1,16 @@
+// clock.rpp - timers: on_timer(window, handler, milliseconds)
+var win, big, up, bar;
+
+func tick(w) {
+  set_text(big, time_str());
+  var s = ticks() / 1000;
+  set_text(up, "Running for " + s + " seconds");
+  set_value(bar, (s % 60) * 100 / 60);
+}
+
+win = window("Clock", 260, 130);
+big = label(win, 80, 20, "--:--");
+up = label(win, 20, 50, "");
+bar = progress(win, 20, 80, 220, 0);
+on_timer(win, tick, 1000);
+tick(win);

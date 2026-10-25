@@ -1,0 +1,24 @@
+// notes.rpp - Open / Save As dialogs: open_dialog() and save_dialog(default name) return a path ("" = cancelled)
+var win, box, status;
+
+func do_save(b) {
+  var path = save_dialog("note.txt");
+  if (path != "") {
+    file_write(path, get_text(box));
+    set_text(status, "Saved " + path);
+  }
+}
+func do_open(b) {
+  var path = open_dialog();
+  if (path != "") {
+    set_text(box, left(file_read(path), 60));
+    set_text(status, "Opened " + path);
+  }
+}
+
+win = window("Quick note", 420, 150);
+label(win, 16, 20, "Text:");
+box = textbox(win, 70, 16, 330, "Type something here");
+button(win, 16, 60, 120, 32, "Open...", do_open);
+button(win, 146, 60, 120, 32, "Save As...", do_save);
+status = label(win, 16, 108, "");

@@ -1,8 +1,8 @@
 /* ---------- state ---------- */
 static int ph = 0; /* 0 boot, 1 setup, 2 login, 3 desktop */
 static char cname[32] = "REDWILL-PC", uname_[32] = "RedWill User", upass[32];
-typedef struct { char b[32]; int n; } Fld;
-static void fld_set(Fld *f, const char *s) { f->n = 0; while (s[f->n] && f->n < 30) { f->b[f->n] = s[f->n]; f->n++; } f->b[f->n] = 0; }
+typedef struct { char b[96]; int n; } Fld;
+static void fld_set(Fld *f, const char *s) { f->n = 0; while (s[f->n] && f->n < 90) { f->b[f->n] = s[f->n]; f->n++; } f->b[f->n] = 0; }
 static void fld_key(Fld *f, int ch, int max) {
     if (ch == 8) { if (f->n) f->b[--f->n] = 0; }
     else if (ch >= 32 && ch < 127 && f->n < max) { f->b[f->n++] = (char)ch; f->b[f->n] = 0; }

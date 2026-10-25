@@ -13,14 +13,14 @@ realstart:
     movw $0x7C00,%sp
     sti
     cld
-    # copy the BIOS 8x16 ROM font to 0x60000
+    # copy the BIOS 8x16 ROM font to 0x90000 (above the stack, clear of the kernel image)
     movw $0x1130,%ax
     movw $0x0600,%bx
     int $0x10
     movw %es,%ax
     movw %ax,%ds
     movw %bp,%si
-    movw $0x6000,%ax
+    movw $0x9000,%ax
     movw %ax,%es
     xorw %di,%di
     movw $2048,%cx

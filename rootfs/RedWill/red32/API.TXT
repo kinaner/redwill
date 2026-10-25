@@ -1,0 +1,69 @@
+RedWill API 1.0 - RPP language reference
+=========================================
+Programs are .rpp scripts (text) or .rxe executables (compiled .rpp).
+Run: double-click in Explorer, or Terminal: run NAME. Compile: rppc X.rpp
+
+LANGUAGE
+  // comment        /* comment */
+  var a = 5, s = "hi", arr[10];     globals (arrays are global only)
+  func name(p1, p2) { ... return x; }   define BEFORE using globals in it
+  if (c) {..} else {..}   while (c) {..}   for (i = 0; i < 9; i += 1) {..}
+  break;  continue;  += and -= work on plain variables
+  Operators: + - * / %  == != < > <= >=  && || !
+  Numbers: 12  0xFF  'A'.  Strings: "text\n"  (+ joins; numbers convert)
+  A bare function name is a handler:  button(w,10,10,80,24,"Go",on_go);
+  Top-level statements run first (like main). A program with windows keeps
+  running until its windows are closed or exit() is called.
+
+STRINGS / MATH
+  len(s) mid(s,start,n) left(s,n) right(s,n) find(s,t)->index or -1
+  upper(s) lower(s) trim(s) chr(n) asc(s) str(n) val(s) hex(n)
+  field(s,sep,i) i-th piece   fields(s,sep) number of pieces
+  abs(n) min(a,b) max(a,b) rnd(n)->0..n-1  rgb(r,g,b)->colour
+
+SYSTEM
+  print(x)      write a line in the Terminal      exit()
+  ticks()  ms since boot       sleep(ms)   beep(freq,ms)
+  time_str() "HH:MM"   username()   screen_w() screen_h()
+
+WINDOWS  (w = window handle)
+  window(title,width,height)->w     client size in pixels
+  win_title(w,t)  win_close(w)  win_redraw(w)  win_move(w,x,y)
+  on_close(w,h)   h(w) runs when the user closes; return 1 to cancel
+
+CONTROLS  (x,y relative to the window; all return a handle c)
+  label(w,x,y,text)            button(w,x,y,wd,ht,text,handler)
+  textbox(w,x,y,wd,text)       checkbox(w,x,y,text,handler)
+  listbox(w,x,y,wd,ht,handler) progress(w,x,y,wd,percent)
+  set_text(c,t) get_text(c)    set_checked(c,0/1) get_checked(c)
+  set_value(c,n) get_value(c)  (progress 0..100)
+  list_add(c,t) list_clear(c) list_count(c) list_get(c,i)
+  list_sel(c)->index or -1     list_select(c,i)
+  ctl_enable(c,0/1)  ctl_show(c,0/1)  ctl_focus(c)
+  Handlers: button h(c)   checkbox h(c,checked)   listbox h(c,index)
+
+EVENTS
+  on_click(w,h)   h(x,y)   mouse click in empty window area
+  on_key(w,h)     h(key)   ASCII; 10=Enter 8=Back 27=Esc
+                           17=Up 18=Down 19=Left 20=Right 21=Del
+  on_timer(w,h,ms) h(w)    repeats every ms (min 10)
+  on_paint(w,h)   h(w)     draw with the calls below (only valid inside)
+
+DRAWING  (only inside an on_paint handler; x,y from window top-left)
+  fill_rect(x,y,w,h,c)  draw_rect(x,y,w,h,c)  draw_line(x1,y1,x2,y2,c)
+  fill_circle(cx,cy,r,c)  draw_text(x,y,text,c)
+  draw_icon(x,y,index,size)   index 0..11 (see inter32/icons)
+
+DIALOGS  (modal, return when closed)
+  msgbox(text)   confirm(text)->1/0   input_box(title,default)->text
+  open_dialog()  save_dialog(name)    -> full path, or "" if cancelled
+
+FILES  (paths: C:\RedWill\My Documents\a.txt  or relative to the Terminal's folder)
+  file_read(p)->text   file_write(p,text)->1/0   file_append(p,text)
+  file_exists(p)  is_dir(p)  file_delete(p)  mkdir(p)
+  dir_list(p)->names separated by \n (folders end with \)
+  run(p)->1/0   start another .rpp / .rxe
+
+LIMITS: 6 programs, 8 windows, 128 controls, 24 list items, 8 params per
+function, 600000 instructions per event (then "ran too long").
+Examples: C:\RedWill\red-sdk

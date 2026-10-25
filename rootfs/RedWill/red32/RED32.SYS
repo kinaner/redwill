@@ -1,0 +1,7 @@
+RED32 - RedWill system folder
+-----------------------------
+This folder holds the system files of RedWill.
+  API.TXT     reference of the RedWill API (RPP language + calls)
+  SYSTEM.INI  system configuration
+  SYSINFO.rxe / .rpp   system information program
+Programs in this folder can be started from anywhere in the Terminal:  run sysinfo

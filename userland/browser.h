@@ -8,15 +8,16 @@ static const char *page_for(const char *u, int *plain) {
     if (!scmp(u, "redwill://about")) return P_ABOUT;
     if (!scmp(u, "redwill://help")) return P_HELP;
     if (!scmp(u, "redwill://files")) {
-        char *p = sapp(pgbuf, "<h1>Your files</h1><ul>");
-        for (int i = 0; i < 20; i++) if (fs[i].used && p - pgbuf < 1450) { p = sapp(p, "<li><a href=file://"); p = sapp(p, fs[i].name); p = sapp(p, ">"); p = sapp(p, fs[i].name); p = sapp(p, "</a></li>"); }
+        char *p = sapp(pgbuf, "<h1>My Documents</h1><ul>"); int ent[96], cnt = fs_list(fs_docs, ent, 96);
+        for (int i = 0; i < cnt; i++) if (ent[i] >= 0 && !fsn[ent[i]].dir && p - pgbuf < 3500) { p = sapp(p, "<li><a href=file://"); p = sapp(p, fsn[ent[i]].name); p = sapp(p, ">"); p = sapp(p, fsn[ent[i]].name); p = sapp(p, "</a></li>"); }
         sapp(p, "</ul><p><a href=redwill://home>Start page</a></p>"); return pgbuf;
     }
     if (u[0] == 'f' && u[1] == 'i' && u[2] == 'l' && u[3] == 'e' && u[4] == ':' && u[5] == '/' && u[6] == '/') {
-        char n[24]; int k = 0; while (u[7 + k] && k < 19) { n[k] = up_(u[7 + k]); k++; } n[k] = 0;
-        int i = fs_find(n); if (i < 0) { sapp(pgbuf, "<h1>File not found</h1><p>No such file in My Documents.</p><p><a href=redwill://home>Start page</a></p>"); return pgbuf; }
-        if (k > 4 && n[k - 4] == '.' && n[k - 3] == 'H' && n[k - 2] == 'T' && n[k - 1] == 'M') { sapp(pgbuf, fs[i].d); return pgbuf; }
-        *plain = 1; sapp(pgbuf, fs[i].d); return pgbuf;
+        int i = fs_walk(u + 7, fs_docs); if (i >= 0 && fsn[i].dir) i = -1;
+        if (i < 0) { sapp(pgbuf, "<h1>File not found</h1><p>No such file. Paths are relative to My Documents.</p><p><a href=redwill://home>Start page</a></p>"); return pgbuf; }
+        int k = 0; const char *d = fs_data(i); char *p = pgbuf; while (d[k] && k < 3900) { *p++ = d[k]; k++; } *p = 0;
+        if (!fs_isext(i, "htm")) *plain = 1;
+        return pgbuf;
     }
     sapp(pgbuf, "<h1>Cannot reach this address</h1><p>RedWill has no network driver yet, so it cannot open internet sites. Local pages and files work: try redwill://home or file://README.TXT.</p><p><a href=redwill://home>Start page</a></p>");
     return pgbuf;

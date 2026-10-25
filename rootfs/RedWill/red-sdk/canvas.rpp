@@ -1,0 +1,23 @@
+// canvas.rpp - custom painting: on_paint draws, on_click receives mouse clicks
+var win, px[300], py[300], n, col;
+
+func paint(w) {                       // called every time the window is redrawn
+  fill_rect(0, 0, 400, 260, rgb(255, 255, 255));
+  var i;
+  for (i = 0; i < n; i += 1) { fill_circle(px[i], py[i], 7, col); }
+  draw_rect(0, 0, 400, 260, rgb(120, 120, 120));
+  draw_text(10, 10, "Click to draw. Dots: " + n, rgb(90, 90, 90));
+}
+func click(x, y) {
+  if (y < 260 && n < 300) { px[n] = x; py[n] = y; n += 1; }
+  win_redraw(win);
+}
+func recolor(b) { col = rgb(rnd(256), rnd(256), rnd(256)); win_redraw(win); }
+func clear(b) { n = 0; win_redraw(win); }
+
+col = rgb(200, 30, 40);
+win = window("Canvas", 400, 310);
+on_paint(win, paint);
+on_click(win, click);
+button(win, 10, 268, 110, 30, "New colour", recolor);
+button(win, 130, 268, 110, 30, "Clear", clear);

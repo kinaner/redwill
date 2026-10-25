@@ -1,0 +1,34 @@
+// catch.rpp - a small game: arrow keys move the paddle, catch the falling blocks
+var win, px, bx, by, score, lives, speed;
+
+func reset_block() { bx = rnd(260); by = 0; }
+
+func paint(w) {
+  fill_rect(0, 0, 300, 300, rgb(16, 20, 48));
+  fill_rect(bx, by, 28, 28, rgb(240, 200, 40));
+  fill_rect(px, 276, 70, 14, rgb(90, 200, 255));
+  draw_text(8, 6, "Score " + score + "   Lives " + lives, rgb(255, 255, 255));
+  if (lives <= 0) { draw_text(96, 140, "GAME OVER - press Enter", rgb(255, 120, 120)); }
+}
+func key(k) {
+  if (k == 19 && px > 0) { px -= 24; }
+  if (k == 20 && px < 230) { px += 24; }
+  if (k == 10 && lives <= 0) { score = 0; lives = 3; speed = 6; reset_block(); }
+  win_redraw(win);
+}
+func step(w) {
+  if (lives <= 0) { return 0; }
+  by += speed;
+  if (by >= 262) {
+    if (bx + 28 > px && bx < px + 70) { score += 1; if (speed < 20) { speed += 1; } beep(880, 20); }
+    else { lives -= 1; beep(180, 60); }
+    reset_block();
+  }
+  win_redraw(win);
+}
+
+px = 115; lives = 3; speed = 6; reset_block();
+win = window("Catch!", 300, 300);
+on_paint(win, paint);
+on_key(win, key);
+on_timer(win, step, 40);

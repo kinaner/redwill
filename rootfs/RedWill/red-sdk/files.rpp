@@ -1,0 +1,19 @@
+// files.rpp - list box + file functions (dir_list, file_read, is_dir)
+var win, list, info, dir;
+
+func show(l, i) {                       // list handlers receive (list, selected index)
+  var name = list_get(l, i);
+  if (right(name, 1) == "\\") {
+    set_text(info, "Folder: " + name);
+  } else {
+    set_text(info, name + ": " + len(file_read(dir + "\\" + name)) + " bytes");
+  }
+}
+
+dir = "C:\\RedWill\\red-sdk";
+win = window("Files in red-sdk", 340, 280);
+list = listbox(win, 16, 16, 300, 200, show);
+info = label(win, 16, 232, "Select a file");
+var all = dir_list(dir);
+var i;
+for (i = 0; i < fields(all, "\n"); i += 1) { list_add(list, field(all, "\n", i)); }

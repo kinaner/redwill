@@ -1,0 +1,15 @@
+// adder.rpp - text boxes, labels and a button
+var win, a, b, res;
+
+func add(btn) {
+  var sum = val(get_text(a)) + val(get_text(b));
+  set_text(res, "Result: " + sum);
+}
+
+win = window("Adder", 300, 160);
+label(win, 20, 24, "First number:");
+a = textbox(win, 140, 20, 130, "1");
+label(win, 20, 60, "Second number:");
+b = textbox(win, 140, 56, 130, "2");
+button(win, 20, 100, 100, 32, "Add", add);
+res = label(win, 140, 108, "Result: ?");

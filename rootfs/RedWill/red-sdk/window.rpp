@@ -1,0 +1,14 @@
+// window.rpp - your first window: a label and two buttons
+var win, lbl, count;
+
+func clicked(btn) {          // button handlers receive the button's handle
+  count += 1;
+  set_text(lbl, "You clicked " + count + " time(s)");
+  beep(660, 40);
+}
+func quit(btn) { win_close(win); }
+
+win = window("My first RedWill window", 320, 150);
+lbl = label(win, 20, 20, "Press the button!");
+button(win, 20, 60, 120, 32, "Click me", clicked);
+button(win, 160, 60, 120, 32, "Close", quit);

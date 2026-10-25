@@ -21,6 +21,9 @@ static void icon(int k, int x, int y, int sz) {
         }
     }
 }
+/* extra icons: 10 = program (.rxe), 11 = script (.rpp) */
+static int icon_win(int k) { return k < 9 ? k : 10; }
+static int file_icon(int n) { if (n < 0) return 9; if (fsn[n].dir) return 2; if (fs_isext(n, "rxe")) return 10; if (fs_isext(n, "rpp")) return 11; if (fs_isext(n, "htm")) return 8; return 9; }
 static const u8 SMI[9] = { 2, 8, 0, 3, 4, 1, 6, 7, 5 }; /* start-menu order */
 static const u8 DESKI[6] = { 2, 8, 0, 3, 4, 6 };
 

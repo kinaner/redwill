@@ -8,26 +8,39 @@ static void draw_icons(void) {
         str(lx, y + 37, DESKN[k], 0xFFFFFF);
     }
 }
-static void ordfiles(void) { en = 0; for (int i = 0; i < 20; i++) if (fs[i].used) eord[en++] = i; }
+static void ordfiles(void) { if (ecur < 0 || !fsn[ecur].used || !fsn[ecur].dir) ecur = fs_docs; en = fs_list(ecur, eord, 96); if (esel >= en) esel = -1; }
+/* explorer toolbar + sidebar layout (shared by drawing and clicking) */
+static const char *EXB[7] = { "New", "Folder", "Open", "Edit", "Delete", "Up", "Details" };
+static const int EXBX[7] = { 6, 64, 134, 192, 250, 322, 372 }, EXBW[7] = { 52, 64, 52, 52, 66, 44, 76 };
+static const char *EXT_[5] = { "Make a new file", "Make a new folder", "Open selected", "Edit in Notepad", "Delete selected" };
+static const char *EXP_[4] = { "My Documents", "red-sdk (examples)", "red32 (system)", "Terminal" };
+#define EXT_Y(i) (36 + (i) * 20)
+#define EXP_Y(i) (168 + (i) * 20)
 static void draw_window(int w) {
     Win *p = &W[w]; int act = (w == top_win()); int x = p->x, y = p->y, ww = p->w, hh = p->h;
     rect(x, y, ww, hh, act ? T.pilld : 0x7A7EA8); vgrad(x + 1, y + 1, ww - 2, 27, act ? T.ta : 0x8E91C0, act ? T.tb : 0xB4B7DA);
     rect(x + 3, y + 28, ww - 6, hh - 31, T.cl);
     const char *title = WN[w]; char tb[40];
+    if (w == 2) title = ecur > 0 ? fsn[ecur].name : "C:\\";
     if (w == 0) { char *e = sapp(tb, nname[0] ? nname : "Untitled"); sapp(e, " - Notepad"); title = tb; }
-    icon(w, x + 6, y + 6, 16); bstr(x + 28, y + 6, title, 0xFFFFFF);
+    icon(icon_win(w), x + 6, y + 6, 16); bstr(x + 28, y + 6, title, 0xFFFFFF);
     int bx = x + ww - 24;
     rect(bx, y + 5, 19, 18, 0xFFFFFF); rect(bx + 1, y + 6, 17, 16, 0xD9534F); bstr(bx + 5, y + 6, "x", 0xFFFFFF); bx -= 22;
     if (CANMAX[w]) { rect(bx, y + 5, 19, 18, 0xFFFFFF); rect(bx + 1, y + 6, 17, 16, T.pill); frame(bx + 5, y + 9, 9, 9, 0xFFFFFF); rect(bx + 5, y + 9, 9, 2, 0xFFFFFF); bx -= 22; }
     rect(bx, y + 5, 19, 18, 0xFFFFFF); rect(bx + 1, y + 6, 17, 16, T.pill); rect(bx + 5, y + 16, 9, 3, 0xFFFFFF);
     int cx = x + 3, cy = y + 28, cw = ww - 6, ch = hh - 31; char b[96];
     if (w == 0) {
-        rect(cx, cy, cw, 26, T.bar); button(cx + 6, cy + 3, 44, 20, "New", 0); button(cx + 56, cy + 3, 44, 20, "Save", 0); str(cx + 112, cy + 5, "Ctrl+S saves to My Documents", 0x303050);
+        rect(cx, cy, cw, 26, T.bar); button(cx + 6, cy + 3, 44, 20, "New", 0); button(cx + 56, cy + 3, 44, 20, "Open", 0); button(cx + 106, cy + 3, 44, 20, "Save", 0); button(cx + 156, cy + 3, 44, 20, "Run", 0);
+        str(cx + 210, cy + 5, "Ctrl+S = Save As...", 0x303050);
         int tx = cx + 3, ty = cy + 30, tw = cw - 6, th_ = ch - 33; rect(tx, ty, tw, th_, 0x7F9DB9); rect(tx + 1, ty + 1, tw - 2, th_ - 2, 0xFFFFFF);
         int cols = (tw - 8) / 8, col = 0, row = 0, maxrow = (th_ - 8) / 16;
-        for (int i = 0; i < nlen; i++) { char c = nbuf[i]; if (c == '\n') { col = 0; row++; continue; } if (col >= cols) { col = 0; row++; } if (row >= maxrow) break; chr(tx + 4 + col * 8, ty + 4 + row * 16, c, 0); col++; }
+        for (int i = 0; i < nlen; i++) { char c = nbuf[i]; if (c == '\n') { col = 0; row++; continue; } if (col >= cols) { col = 0; row++; } col++; }
         if (col >= cols) { col = 0; row++; }
-        if (act && ((ms_acc / 500) & 1) && row < maxrow) rect(tx + 4 + col * 8, ty + 6 + row * 16, 2, 13, 0);
+        int total = row + 1, mx_ = total > maxrow ? total - maxrow : 0; if (nup > mx_) nup = mx_; int skip = mx_ - nup;
+        col = 0; row = 0;
+        for (int i = 0; i < nlen; i++) { char c = nbuf[i]; if (c == '\n') { col = 0; row++; continue; } if (col >= cols) { col = 0; row++; } if (row - skip >= maxrow) break; if (row >= skip) chr(tx + 4 + col * 8, ty + 4 + (row - skip) * 16, c, 0); col++; }
+        if (col >= cols) { col = 0; row++; }
+        if (act && !nup && ((ms_acc / 500) & 1) && row - skip < maxrow && row >= skip) rect(tx + 4 + col * 8, ty + 6 + (row - skip) * 16, 2, 13, 0);
     } else if (w == 1) {
         rect(cx + 6, cy + 6, 210, 32, 0x7F9DB9); rect(cx + 7, cy + 7, 208, 30, 0xFFFFFF); if (cerr) sapp(b, "Error"); else iapp(b, ccur);
         str(cx + 6 + 210 - 8 - slen(b) * 8, cy + 14, b, 0);
@@ -35,24 +48,23 @@ static void draw_window(int w) {
     } else if (w == 2) {
         ordfiles();
         str(cx + 8, cy + 3, "File   Edit   View   Favorites   Tools   Help", 0x101030);
-        rect(cx, cy + 22, cw, 30, T.bar); button(cx + 6, cy + 25, 52, 24, "New", 0); button(cx + 64, cy + 25, 52, 24, "Open", 0); button(cx + 122, cy + 25, 66, 24, "Delete", 0); button(cx + 196, cy + 25, 76, 24, eview ? "Icons" : "Details", 0);
-        str(cx + 8, cy + 58, "Address", 0x303050); rect(cx + 70, cy + 55, cw - 80, 22, 0xFFFFFF); frame(cx + 70, cy + 55, cw - 80, 22, 0x808090); str(cx + 76, cy + 58, "C:\\RedWill\\My Documents", 0);
+        rect(cx, cy + 22, cw, 30, T.bar); for (int i = 0; i < 7; i++) button(cx + EXBX[i], cy + 25, EXBW[i], 24, i == 6 ? (eview ? "Icons" : "Details") : EXB[i], 0);
+        str(cx + 8, cy + 58, "Address", 0x303050); rect(cx + 70, cy + 55, cw - 80, 22, 0xFFFFFF); frame(cx + 70, cy + 55, cw - 80, 22, 0x808090); { char pb[100]; fs_path(ecur, pb); str(cx + 76, cy + 58, pb, 0); }
         int bt = cy + 82, bh = ch - 82 - 22;
         vgrad(cx, bt, 176, bh, T.menu, mix(T.menu, 0xFFFFFF, 40, 100));
         rect(cx + 8, bt + 8, 160, 20, T.pill); bstr(cx + 14, bt + 10, "File Tasks", 0xFFFFFF);
-        str(cx + 14, bt + 36, "Make a new file", 0x1030D0); rect(cx + 14, bt + 51, 15 * 8, 1, 0x1030D0);
-        str(cx + 14, bt + 56, "Open selected", 0x1030D0); rect(cx + 14, bt + 71, 13 * 8, 1, 0x1030D0);
-        str(cx + 14, bt + 76, "Delete selected", 0x1030D0); rect(cx + 14, bt + 91, 15 * 8, 1, 0x1030D0);
-        rect(cx + 8, bt + 104, 160, 20, T.pill); bstr(cx + 14, bt + 106, "Other Places", 0xFFFFFF);
-        str(cx + 14, bt + 132, "RedWill Browser", 0x1030D0); rect(cx + 14, bt + 147, 15 * 8, 1, 0x1030D0);
-        str(cx + 14, bt + 152, "Terminal", 0x1030D0); rect(cx + 14, bt + 167, 8 * 8, 1, 0x1030D0);
-        rect(cx + 8, bt + 180, 160, 20, T.pill); bstr(cx + 14, bt + 182, "Details", 0xFFFFFF);
-        if (esel >= 0 && esel < en) { File *f = &fs[eord[esel]]; str(cx + 14, bt + 208, f->name, 0x101030); char *e = iapp(b, f->len); sapp(e, " bytes"); str(cx + 14, bt + 226, b, 0x404060); str(cx + 14, bt + 244, "Text Document", 0x404060); }
+        for (int i = 0; i < 5; i++) { str(cx + 14, bt + EXT_Y(i), EXT_[i], 0x1030D0); rect(cx + 14, bt + EXT_Y(i) + 15, slen(EXT_[i]) * 8, 1, 0x1030D0); }
+        rect(cx + 8, bt + 140, 160, 20, T.pill); bstr(cx + 14, bt + 142, "Other Places", 0xFFFFFF);
+        for (int i = 0; i < 4; i++) { str(cx + 14, bt + EXP_Y(i), EXP_[i], 0x1030D0); rect(cx + 14, bt + EXP_Y(i) + 15, slen(EXP_[i]) * 8, 1, 0x1030D0); }
+        rect(cx + 8, bt + 256, 160, 20, T.pill); bstr(cx + 14, bt + 258, "Details", 0xFFFFFF);
+        if (esel >= 0 && esel < en && eord[esel] >= 0) { int e = eord[esel]; str(cx + 14, bt + 284, fsn[e].name, 0x101030);
+            const char *ty = fsn[e].dir ? "File folder" : fs_isext(e, "rxe") ? "RedWill program" : fs_isext(e, "rpp") ? "RPP script" : fs_isext(e, "htm") ? "Web page" : "Text document";
+            str(cx + 14, bt + 302, ty, 0x404060); if (!fsn[e].dir) { char *p = iapp(b, fsn[e].len); sapp(p, " bytes"); str(cx + 14, bt + 320, b, 0x404060); } }
         int lx = cx + 176, lw = cw - 176; rect(lx, bt, lw, bh, 0xFFFFFF);
-        if (!eview) { for (int i = 0; i < en; i++) { int gx = lx + 10 + (i % ((lw - 10) / 96 ? (lw - 10) / 96 : 1)) * 96, gy = bt + 10 + (i / ((lw - 10) / 96 ? (lw - 10) / 96 : 1)) * 84; if (i == esel) rect(gx - 2, gy + 36, 92, 36, T.pill); icon(9, gx + 24, gy, 32); str(gx, gy + 40, fs[eord[i]].name, i == esel ? 0xFFFFFF : 0x101030); } }
+        if (!eview) { int cols = (lw - 10) / 96 ? (lw - 10) / 96 : 1; for (int i = 0; i < en; i++) { int e = eord[i], gx = lx + 10 + (i % cols) * 96, gy = bt + 10 + (i / cols) * 84; if (gy + 72 > bt + bh) break; if (i == esel) rect(gx - 2, gy + 36, 92, 36, T.pill); icon(e < 0 ? 2 : file_icon(e), gx + 24, gy, 32); char nm[13]; const char *src = e < 0 ? ".." : fsn[e].name; int j = 0; while (src[j] && j < 11) { nm[j] = src[j]; j++; } nm[j] = 0; str(gx + 2, gy + 40, nm, i == esel ? 0xFFFFFF : 0x101030); } }
         else { rect(lx, bt, lw, 20, 0xE4E5F2); bstr(lx + 30, bt + 2, "Name", 0x101030); bstr(lx + lw - 100, bt + 2, "Size", 0x101030);
-            for (int i = 0; i < en; i++) { int yy = bt + 22 + i * 20; if (yy + 20 > bt + bh) break; if (i == esel) rect(lx, yy, lw, 20, T.pill); icon(9, lx + 6, yy + 2, 16); str(lx + 30, yy + 2, fs[eord[i]].name, i == esel ? 0xFFFFFF : 0x101030); char *e = iapp(b, fs[eord[i]].len); sapp(e, " B"); str(lx + lw - 100, yy + 2, b, i == esel ? 0xFFFFFF : 0x101030); } }
-        rect(cx, cy + ch - 22, cw, 22, T.bar); char *e = iapp(b, en); sapp(e, " object(s)"); str(cx + 8, cy + ch - 19, b, 0x101030);
+            for (int i = 0; i < en; i++) { int e = eord[i], yy = bt + 22 + i * 20; if (yy + 20 > bt + bh) break; if (i == esel) rect(lx, yy, lw, 20, T.pill); icon(e < 0 ? 2 : file_icon(e), lx + 6, yy + 2, 16); str(lx + 30, yy + 2, e < 0 ? ".." : fsn[e].name, i == esel ? 0xFFFFFF : 0x101030); if (e >= 0) { if (fsn[e].dir) sapp(b, "<DIR>"); else { char *p = iapp(b, fsn[e].len); sapp(p, " B"); } str(lx + lw - 100, yy + 2, b, i == esel ? 0xFFFFFF : 0x101030); } } }
+        rect(cx, cy + ch - 22, cw, 22, T.bar); char *e = iapp(b, en > 0 && eord[0] < 0 ? en - 1 : en); sapp(e, " object(s)"); str(cx + 8, cy + ch - 19, b, 0x101030);
     } else if (w == 3) {
         rect(cx, cy, cw, ch, 0x101018); int rows = (ch - 8) / 16 - 1; if (rows < 1) rows = 1; int s0 = tn > rows ? tn - rows : 0, yy = cy + 4;
         for (int i = s0; i < tn; i++) { str(cx + 6, yy, tl[i], tfg); yy += 16; }
@@ -76,6 +88,8 @@ static void draw_window(int w) {
         disc(cx + 8 + sax * 16 + 8, cy + 28 + say * 16 + 8, 6, 0xE03030);
         if (!sstart && salive) cstr(cx + 168, cy + 140, "Press an arrow key to start", 0xFFFFFF);
         if (!salive) { cstr(cx + 168, cy + 126, "GAME OVER", 0xFF8080); cstr(cx + 168, cy + 146, "Press Enter to restart", 0xFFFFFF); }
+    } else if (w >= 9) {
+        swin_draw(w, cx, cy, cw, ch);
     } else if (w == 7) {
         bstr(cx + 12, cy + 10, "Theme", T.pilld);
         for (int i = 0; i < 3; i++) { int xx = cx + 12 + i * 112; rect(xx - 2, cy + 32, 106, 66, i == th ? T.pill : 0xB0B0C0); vgrad(xx, cy + 34, 102, 36, TH[i].wa, TH[i].wb); rect(xx, cy + 74, 102, 8, TH[i].bar); cstr(xx + 51, cy + 82, TH[i].name, 0x101030); }
@@ -121,7 +135,7 @@ static void draw_taskbar(void) {
     for (int k = 0; k < NW; k++) {
         if (!W[k].open) continue; int act = (k == top_win());
         rect(bx, tb + 3, bw - 4, 24, act ? T.bardd : T.bard); if (act) bevel(bx, tb + 3, bw - 4, 24, 0);
-        icon(k, bx + 3, tb + 7, 16); char t[20]; int j = 0; const char *nm = WN[k]; while (nm[j] && j < (bw - 30) / 8 && j < 18) { t[j] = nm[j]; j++; } t[j] = 0; str(bx + 24, tb + 7, t, T.txt);
+        icon(icon_win(k), bx + 3, tb + 7, 16); char t[20]; int j = 0; const char *nm = WN[k]; while (nm[j] && j < (bw - 30) / 8 && j < 18) { t[j] = nm[j]; j++; } t[j] = 0; str(bx + 24, tb + 7, t, T.txt);
         bx += bw;
     }
     rect(SW - 124, tb + 2, 2, 26, T.bardd); rect(SW - 122, tb, 122, 30, T.bard);
@@ -135,7 +149,7 @@ static void draw_menu(void) {
     int hv = menu_hit();
     for (int i = 0; i < 9; i++) { int yy = y0 + 52 + i * 34, on = (hv == i); if (on) rect(8, yy, 184, 32, T.pill); icon(SMI[i], 14, yy + 2, 28); bstr(50, yy + 8, SMN[SMI[i] == 2 ? 0 : SMI[i] == 8 ? 1 : SMI[i] == 0 ? 2 : SMI[i] == 3 ? 3 : SMI[i] == 4 ? 4 : SMI[i] == 1 ? 5 : SMI[i] == 6 ? 6 : SMI[i] == 7 ? 7 : 8], on ? 0xFFFFFF : T.txt); }
     frame(200, y0 + 52, 152, 190, 0x585858); rect(201, y0 + 53, 150, 188, mix(T.menu, 0xFFFFFF, 50, 100)); bstr(208, y0 + 58, "Recent files", T.txt);
-    ordfiles(); for (int i = 0; i < en && i < 7; i++) { icon(9, 206, y0 + 82 + i * 22, 16); char t[14]; int j = 0; while (fs[eord[i]].name[j] && j < 12) { t[j] = fs[eord[i]].name[j]; j++; } t[j] = 0; str(226, y0 + 82 + i * 22, t, T.txt); }
+    { int ent[96], cnt = fs_list(fs_docs, ent, 96), row = 0; for (int i = 0; i < cnt && row < 7; i++) { int e = ent[i]; if (e < 0 || fsn[e].dir) continue; icon(file_icon(e), 206, y0 + 82 + row * 22, 16); char t[14]; int j = 0; while (fsn[e].name[j] && j < 12) { t[j] = fsn[e].name[j]; j++; } t[j] = 0; str(226, y0 + 82 + row * 22, t, T.txt); row++; } }
     str(204, y0 + 252, cname, T.txt); str(204, y0 + 270, "RedWill 1.0", T.txt);
     rect(MW - 244, y0 + MH - 44, 112, 32, hv == 21 ? 0x7A7A92 : 0x6A6A82); cstr(MW - 188, y0 + MH - 36, "Restart", 0xFFFFFF);
     rect(MW - 124, y0 + MH - 44, 116, 32, hv == 20 ? 0x707070 : 0x585858); cstr(MW - 66, y0 + MH - 36, "Shut Down", 0xFFFFFF);
@@ -157,7 +171,7 @@ static void render(void) {
     else if (ph == 3) {
         cv = BACK; memcpy(BACK, WALL, (unsigned)SW * SH * 4); draw_icons();
         for (int i = 0; i < NW; i++) { int w = Z[i]; if (W[w].open && !W[w].min) draw_window(w); }
-        draw_taskbar(); if (menu) draw_menu(); if (cal) draw_cal(); if (ctxo) draw_ctx();
+        draw_taskbar(); if (menu) draw_menu(); if (cal) draw_cal(); if (ctxo) draw_ctx(); dlg_draw();
     }
     cv = BACK; draw_cursor();
 }

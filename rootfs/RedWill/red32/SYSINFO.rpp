@@ -1,0 +1,11 @@
+// sysinfo.rpp - system information (lives in C:\RedWill\red32, start with:  run sysinfo)
+var win, up;
+func tick(w) { set_text(up, "Uptime: " + (ticks() / 1000) + " s    Time: " + time_str()); }
+win = window("System Information", 340, 170);
+label(win, 20, 16, "RedWill OS 1.0   (Red32 API 1.0)");
+label(win, 20, 44, "User: " + username());
+label(win, 20, 64, "Screen: " + screen_w() + " x " + screen_h());
+label(win, 20, 84, "System folder: C:\\RedWill\\red32");
+up = label(win, 20, 112, "");
+on_timer(win, tick, 1000);
+tick(win);
