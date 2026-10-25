@@ -8,3 +8,4 @@ Bootable i386 hobby OS. Build with `./build.sh [pad_mb]` -> `build/redwill.iso`.
 - `tools/`    `mkiso.py` ISO9660 writer
 - `inter32/icons/` icônes 32x32 `.ico` (style Windows NT), générées par `python3 tools/gen_icons.py`
 - Les icônes de `inter32/icons/*.ico` sont converties au build (`tools/ico2c.py`) et affichées par le kernel.
+- Police : DejaVu Sans Mono anti-aliasée (`kernel/gfx/font_data.h`, générée par `tools/gen_font.py`, licence dans `LICENSE-FONT.txt`).
